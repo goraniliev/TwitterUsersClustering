@@ -1,0 +1,13 @@
+input {
+    height: 30px;
+    display: block;
+}
+
+.token_input {
+    width: 400px;
+}
+
+.main_button {
+    width: 300px;
+    margin: 10px;
+}
