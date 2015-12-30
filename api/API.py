@@ -25,3 +25,8 @@ def get_api_instance(consumer_key='8wiTu4VA2HQ8IacbcOcxG5N6e',
     api = tweepy.API(auth)
 
     return api
+
+
+def get_id_and_name_by_screen_name(api, screen_name):
+    user = api.get_user(screen_name)
+    return int(user.id), user.name.encode('utf-8')
