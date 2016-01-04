@@ -4,10 +4,25 @@ input {
 }
 
 .token_input {
-    width: 400px;
+    width: 450px;
+    margin: 10px;
 }
 
 .main_button {
-    width: 300px;
+    height: 50px;
+    width: 450px;
     margin: 10px;
+}
+
+form {
+    width: 500px;
+    margin: 30px;
+    border-style: solid;
+    border-color: #999;
+    border-width: 1px;
+
+}
+
+.form_paragraph{
+    margin: 10px
 }

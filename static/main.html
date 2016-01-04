@@ -6,11 +6,40 @@
     <title>Main</title>
     <script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
     <script type="text/javascript" src="/static/js/main.js"></script>
+    <script>
+
+    </script>
 </head>
 <body>
-<input type="button" id="btnUpdateDatabase" value="Update Database" class="main_button">
-<input type="button" id="btnUpdateClusters" value="Update Clusters" class="main_button">
-<input type="button" id="btnShowClusters" value="Show Clusters" class="main_button">
+<form action="/insert_users" method="POST">
+    <p class="form_paragraph">
+        Here you can choose how many users you want to crawl from Time.mk Top Twitter users and insert them locally.
+        There are 15 pages, so you can choose values from 1 to 15.
+        The Twitter API rate limit is strict, so if you cannot dedicate your PC long, you can fill the database
+        incrementally. One page contains 20 users.
+    </p>
+    <label style="margin-left: 10px">First page:</label>
+    <select name="first_page" class="1-15"></select>
+    <label style="margin-left: 80px"> Last page:</label>
+    <select name="last_page" class="1-15"></select>
+    <input class="main_button" type="submit" value="Insert users from chosen range of Time.mk top users' pages.">
+</form>
+
+<form action="/insert_users" method="POST">
+    <p class="form_paragraph">
+        You should call this method after updating the database. When you update the database the users aren't clustered.
+        If you want to cluster them, run this code and the cluster numbers will be calculated and written in database.
+    </p>
+    <input class="main_button" type="submit" value="Update clusters using the new data.">
+</form>
+
+<form action="/insert_users" method="POST">
+    <p class="form_paragraph">
+        You should call this method when you want to see the existing clusters.
+        If the database has been updated and the clusters have not been updated, all users will be in one cluster.
+    </p>
+    <input class="main_button" type="submit" value="Show Clusters">
+</form>
 
 </body>
 

@@ -1,6 +1,6 @@
 from flask import Flask, request
 from api.API import get_api_instance
-from db.Insert_users import insert_users_to_db
+from db.Insert_users import insert_users_from_time_to_db
 
 app = Flask(__name__)
 
@@ -19,7 +19,10 @@ def main_page():
 
 @app.route('/insert_users', methods=['POST'])
 def insert_users():
-    insert_users_to_db()
+    api = get_api_instance()
+    first = int(request.form.get('first_page'))
+    last = int(request.form.get('last_page'))
+    insert_users_from_time_to_db(api, first, last)
     return app.send_static_file('main.html')
 
 if __name__ == '__main__':

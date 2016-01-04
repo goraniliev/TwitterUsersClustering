@@ -22,11 +22,21 @@ def get_api_instance(consumer_key='8wiTu4VA2HQ8IacbcOcxG5N6e',
     """
     @type api: tweepy.api.API
     """
-    api = tweepy.API(auth)
+    api = tweepy.API(auth, wait_on_rate_limit=True)
 
     return api
 
 
-def get_id_and_name_by_screen_name(api, screen_name):
-    user = api.get_user(screen_name)
-    return int(user.id), user.name.encode('utf-8')
+def get_followers(api, id_user):
+    f = []
+    for foll_idx in tweepy.Cursor(api.followers_ids, id=id_user).items():
+        f.append((id_user, foll_idx))
+    return set(f)
+
+
+def get_friends(api, id_user):
+    f = []
+    for friend_idx in tweepy.Cursor(api.friends_ids, id=id_user).items():
+        f.append((id_user, friend_idx))
+        print friend_idx
+    return set(f)
