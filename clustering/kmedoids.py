@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from math import sqrt
 import random
+from db.Insert_users import get_connection
 from db.get_utilities import get_friends
 from get_utilities import get_followers
 
@@ -150,6 +151,16 @@ def get_clusters(k=3):
 #     for f in friends:
 #         fout.write(str(f) + '\t' + str(len(friends[f])) + '\n')
 
-clusters = get_clusters()
-for c in clusters:
-    print c, len(clusters[c])
+
+def update_clusters_in_db():
+    clusters = get_clusters()
+    db = get_connection()
+    cursor = db.cursor()
+    for cluster, users in clusters.iteritems():
+        for user in users:
+            cursor.execute("""update user set cluster=%s where iduser=%s""", (cluster, user))
+            db.commit()
+    cursor.close()
+    db.close()
+
+update_clusters_in_db()
