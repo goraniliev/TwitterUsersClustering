@@ -2,6 +2,7 @@
 from math import sqrt
 import random
 from db.get_utilities import get_friends
+from get_utilities import get_followers
 
 __author__ = 'goran'
 
@@ -14,9 +15,9 @@ def paper_sim(set1, set2):
     return 1.0 * len(set1 & set2) / (sqrt(len(set1)) * sqrt(len(set2)))
 
 
-def random_medoids(data, k=2):
+def random_medoids(user_ids, k=2):
     medoids = set()
-    user_ids = data.keys()
+    # user_ids = data.keys()
     num_users = len(user_ids)
 
     while len(medoids) < k:
@@ -27,18 +28,19 @@ def random_medoids(data, k=2):
     return medoids
 
 
-def init_clusters(data, k, sim=jaccard_sim):
+def init_clusters(friends, followers, k, sim=jaccard_sim):
     cluster_users = {}
-    medoids = random_medoids(data, k)
+    user_ids = friends.keys()
+    medoids = random_medoids(user_ids, k)
     for clust in medoids:
         cluster_users[clust] = set([clust])
     user_clusters = {}
 
-    for user in data:
+    for user in user_ids:
         best_sim = -1
         best_medoid = -1
         for medoid in medoids:
-            similarity = sim(data[medoid], data[user])
+            similarity = (sim(friends[medoid], friends[user]) + sim(followers[medoid], followers[user])) / 2.0;
             if similarity > best_sim:
                 best_sim = similarity
                 best_medoid = medoid
@@ -47,8 +49,8 @@ def init_clusters(data, k, sim=jaccard_sim):
     return cluster_users, user_clusters
 
 
-def within_sim(data, medoid, users, sim=jaccard_sim):
-    return sum([sim(data[medoid], data[user]) for user in users])
+def within_sim(friends, followers, medoid, users, sim=jaccard_sim):
+    return sum([(sim(friends[medoid], friends[user]) + sim(followers[medoid], followers[user])) / 2.0 for user in users])
 
 
 def replace_empty_cluster(used_medians, all_users):
@@ -60,11 +62,11 @@ def replace_empty_cluster(used_medians, all_users):
     return all_users[random.randint(0, len(all_users) - 1)]
 
 
-def kmedoids(data, k=2, max_iter=100, sim=jaccard_sim):
-    all_users = set(data.keys())
+def kmedoids(friends, followers, k=2, max_iter=100, sim=jaccard_sim):
+    all_users = set(friends.keys())
 
     # cluster_users, user_cluster = init_clusters(data, k)
-    medoids = random_medoids(data, k)
+    medoids = random_medoids(friends.keys(), k)
     cluster_users = {}
     new_cluster_users = {}
     for m in medoids:
@@ -76,11 +78,11 @@ def kmedoids(data, k=2, max_iter=100, sim=jaccard_sim):
         cluster_users = new_cluster_users
 
         # Assign users to clusters
-        for user in data:
+        for user in all_users:
             best_clust = -1
             best_sim = -1
             for cluster in cluster_users:
-                similarity = sim(data[cluster], data[user])
+                similarity = (sim(friends[cluster], friends[user]) + sim(followers[cluster], followers[user])) / 2.0
                 # print cluster, user, sim(data[cluster], data[user])
                 if similarity > best_sim:
                     best_sim = similarity
@@ -107,10 +109,10 @@ def kmedoids(data, k=2, max_iter=100, sim=jaccard_sim):
         change = False
         for clust, users in cluster_users.iteritems():
             # print 'users', users
-            best_sim = 1.0 * within_sim(data, clust, users, sim) / len(users)
+            best_sim = 1.0 * within_sim(friends, followers, clust, users, sim) / len(users)
             best_median = clust
             for user in users:
-                similarity = 1.0 * within_sim(data, user, users, sim) / len(users)
+                similarity = 1.0 * within_sim(friends, followers, user, users, sim) / len(users)
                 # print 'sim', similarity
                 if similarity > best_sim:
                     best_sim = similarity
@@ -131,16 +133,17 @@ def kmedoids(data, k=2, max_iter=100, sim=jaccard_sim):
 
 def get_clusters(k=3):
     friends = get_friends()
+    followers = get_followers()
 
-    red_f = {}
-    count = 200
-    for f in friends:
-        red_f[f] = friends[f]
-        count -= 1
-        if count == 0:
-            break
+    # red_f = {}
+    # count = 200
+    # for f in friends:
+    #     red_f[f] = friends[f]
+    #     count -= 1
+    #     if count == 0:
+    #         break
 
-    return kmedoids(red_f, k)
+    return kmedoids(friends, followers, k)
 
 # friends = get_friends()
 # with open('friends.txt', 'w') as fout:
