@@ -37,14 +37,14 @@ def insert_users_from_time_to_db(api, top_fol_start_page=1, top_fol_end_page=15)
     # cursor.execute(del_sql)
     # db.commit()
     users_done = 0
-    start = time.time()
     for i in xrange(top_fol_start_page, top_fol_end_page + 1):
+        start = time.time()
         user_names = get_top_user_names(i)
         unfinished = True
         count = 0
         while unfinished:
             try:
-                users = list(get_top_users(api, user_names))
+                users = list(set(get_top_users(api, user_names)))
                 unfinished = False
                 users_done += len(users)
             except Exception as ex:
@@ -88,11 +88,32 @@ def insert_users_from_time_to_db(api, top_fol_start_page=1, top_fol_end_page=15)
             cursor.executemany("""insert into friend(iduser, idfriend) values(%s,%s)""", friends)
             db.commit()
         print '%d users processed' % users_done
+
         end = time.time()
         exec_time = end - start
         cursor.execute("""insert into insertion_time(start_page, end_page, total_time) values(%s,%s,%s)""",
-                       (top_fol_start_page, top_fol_end_page, exec_time))
+                       (i, i, exec_time))
         db.commit()
+
+    cursor.close()
+    db.close()
+
+
+def set_auto_increment_keys_for_already_inserted_users(api, top_fol_start_page=1, top_fol_end_page=11):
+    user_names = []
+    for i in xrange(top_fol_start_page, top_fol_end_page + 1):
+        user_names += get_top_user_names(i)
+    db = get_connection()
+    cursor = db.cursor()
+    for i in xrange(len(user_names)):
+        try:
+            cursor.execute("""update user set id_time=%s where screenname=%s""", ((i + 1), user_names[i]))
+            db.commit()
+        except Exception as ex:
+            template = "An exception of type {0} occured. Arguments:\n{1!r}"
+            message = template.format(type(ex).__name__, ex.args)
+            print message
+            print user_names[i]
 
     cursor.close()
     db.close()

@@ -1,6 +1,6 @@
 from flask import Flask, request
 from api.API import get_api_instance
-from db.Insert_users import insert_users_from_time_to_db
+from db.Insert_users import insert_users_from_time_to_db, set_auto_increment_keys_for_already_inserted_users
 
 app = Flask(__name__)
 
@@ -24,6 +24,13 @@ def insert_users():
     last = int(request.form.get('last_page'))
     insert_users_from_time_to_db(api, first, last)
     return app.send_static_file('main.html')
+
+
+@app.route('/modify_users', methods=['POST'])
+def set_keys():
+    api = get_api_instance()
+    set_auto_increment_keys_for_already_inserted_users(api)
+    return app.send_static_file('home.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
