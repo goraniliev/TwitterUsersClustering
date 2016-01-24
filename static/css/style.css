@@ -26,3 +26,7 @@ form {
 .form_paragraph{
     margin: 10px
 }
+
+#k_input {
+    width: 200px;
+}

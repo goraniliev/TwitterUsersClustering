@@ -21,3 +21,23 @@ def get_friends():
     db.close()
 
     return friends
+
+
+def get_followers():
+    db = get_connection()
+    cursor = db.cursor()
+
+    followers = {}
+
+    sql = """select * from follower"""
+
+    cursor.execute(sql)
+
+    for (iduser, idfollower) in cursor:
+        followers.setdefault(iduser, set())
+        followers[iduser].add(idfollower)
+
+    cursor.close()
+    db.close()
+
+    return followers

@@ -25,11 +25,12 @@
     <input class="main_button" type="submit" value="Insert users from chosen range of Time.mk top users' pages.">
 </form>
 
-<form action="/" method="POST">
+<form action="/update_clusters" method="POST">
     <p class="form_paragraph">
         You should call this method after updating the database. When you update the database the users aren't clustered.
         If you want to cluster them, run this code and the cluster numbers will be calculated and written in database.
     </p>
+    <input type="text" placeholder="Number of clusters" name="k_value" class="token_input" id="k_input">
     <input class="main_button" type="submit" value="Update clusters using the new data.">
 </form>
 

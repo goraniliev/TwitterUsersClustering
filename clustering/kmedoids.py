@@ -2,8 +2,9 @@
 from math import sqrt
 import random
 from db.Insert_users import get_connection
-from db.get_utilities import get_friends
-from get_utilities import get_followers
+from db.get_utilities import get_friends, get_followers
+
+import matplotlib.pyplot as plt
 
 __author__ = 'goran'
 
@@ -152,8 +153,8 @@ def get_clusters(k=3):
 #         fout.write(str(f) + '\t' + str(len(friends[f])) + '\n')
 
 
-def update_clusters_in_db():
-    clusters = get_clusters()
+def update_clusters_in_db(k=3):
+    clusters = get_clusters(k)
     db = get_connection()
     cursor = db.cursor()
     for cluster, users in clusters.iteritems():
@@ -163,4 +164,45 @@ def update_clusters_in_db():
     cursor.close()
     db.close()
 
-update_clusters_in_db()
+# update_clusters_in_db()
+
+
+def between_sum_sim(clusters, friends, followers, sim=jaccard_sim):
+    s = 0.0
+
+    medoids = clusters.keys()
+    N = len(medoids)
+
+    for m1 in xrange(N):
+        for m2 in xrange(m1 + 1, N):
+            s += (sim(friends[medoids[m1]], friends[medoids[m2]]) + sim(followers[medoids[m1]], followers[medoids[m2]])) / 2.0
+
+    return s
+
+
+def within_sum_sim(clusters, friends, followers, sim=jaccard_sim):
+    s = 0.0
+    for cluster, users in clusters.iteritems():
+        s += sum((sim(friends[cluster], friends[user]) + sim(followers[cluster], followers[user])) / 2.0 for user in users)
+
+    return s
+
+
+def between_within_ratio(clusters, friends, followers, sim=jaccard_sim):
+    return 1.0 * between_sum_sim(clusters, friends, followers, sim) / within_sum_sim(clusters, friends, followers, sim)
+
+
+def choose_K():
+    friends = get_friends()
+    followers = get_followers()
+    ks = []
+    ratios = []
+    for i in xrange(2, 10):
+        clusters = kmedoids(friends, followers, i)
+        ks.append(i)
+        ratios.append(between_within_ratio(clusters, friends, followers))
+
+    plt.plot(ks, ratios)
+    plt.show()
+
+# choose_K()
