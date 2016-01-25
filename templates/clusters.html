@@ -1,0 +1,8 @@
+<dl>
+    {% for key, users in clusters.iteritems() %}
+        <h>{{ key }}</h>
+        {% for user in users %}
+            <dd>{{ user }}</dd>
+        {% endfor %}
+    {% endfor %}
+</dl>
