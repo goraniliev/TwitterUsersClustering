@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import time
 import tweepy
 from common.common import is_inserted
 
@@ -45,7 +46,7 @@ def get_friends(api, id_user):
             f.append((id_user, friend_idx))
             # print friend_idx
     except:
-        return set()
+        time.sleep(15 * 60)
     return set(f)
 
 
@@ -55,7 +56,7 @@ def get_followers_ids(api, id_user):
         for foll_idx in tweepy.Cursor(api.followers_ids, id=id_user).items():
             f.append(foll_idx)
     except:
-        return set()
+        time.sleep(15 * 60)
     return set(f)
 
 

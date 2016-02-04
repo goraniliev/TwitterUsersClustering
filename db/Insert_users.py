@@ -4,7 +4,7 @@ from api import API
 from api.API import get_followers, get_friends, get_users_by_ids, get_user_by_id
 from crawl.Time import get_top_user_names, get_top_users
 from db.connection import get_connection
-from db.get_utilities import get_all_friends, get_all_followers, get_all_users
+from db.get_utilities import get_all_friends, get_all_followers, get_all_users, get_inv_friends, get_inv_followers
 
 __author__ = 'goran'
 
@@ -184,4 +184,49 @@ def insert_more_users_to_db(api):
     db.close()
 
 
-# def insert_more_users_without_unnecessary_api_calls(api, min_friends=3, min_followers=3):
+def find_new_users_to_insert(api, min_friends=1, min_followers=5):
+    inv_user_friends = get_inv_friends()
+    inv_user_followers = get_inv_followers()
+
+    users = []
+
+    for u, cnt in inv_user_friends.iteritems():
+        if cnt > min_friends and inv_user_followers.get(u, 0) > min_followers:
+            users.append(u)
+
+    return users
+
+
+def insert_more_users_without_unnecessary_api_calls(api, min_friends=2, min_followers=10, max_friends=50000, max_followers=50000):
+    users = find_new_users_to_insert(api, min_friends, min_followers)
+
+    db = get_connection()
+    cursor = db.cursor()
+
+    for u in users:
+        user = get_user_by_id(api, u)
+
+        # if he is macedonian, he would already be on Twitter
+        if user.followers_count > max_followers or user.friends_count > max_friends: continue
+
+        cursor.execute("""insert into user(iduser, screenname, name) values(%s,%s,%s)""", user)
+
+        try:
+            friends = get_friends(api, u)
+            followers = get_followers(api, u)
+        except:
+            print 'waiting for API'
+            time.sleep(15 * 60)
+
+        cursor.executemany("""insert into friend(iduser, idfriend) values(%s,%s)""", friends)
+
+        cursor.executemany("""insert into follower(iduser, idfollower) values( %s,%s)""", followers)
+
+        db.commit()
+
+        print user[1].decode('utf-8'), " inserted"
+
+
+
+
+

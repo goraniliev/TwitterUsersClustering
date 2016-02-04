@@ -100,5 +100,39 @@ def get_all_followers():
     return set(users)
 
 
+def get_inv_friends():
+    all_users = get_all_users()
+    db = get_connection()
+    cursor = db.cursor()
+
+    users_friends_count = {}
+
+    sql = """select f.idfriend, count(*) from friend f group by f.idfriend"""
+
+    cursor.execute(sql)
+
+    for record in cursor:
+        if record[0] not in all_users:
+            users_friends_count[record[0]] = int(record[1])
+
+    return users_friends_count
+
+
+def get_inv_followers():
+    all_users = get_all_users()
+    db = get_connection()
+    cursor = db.cursor()
+
+    user_followers_count = {}
+
+    sql = """select f.idfollower, count(*) from follower f group by f.idfollower"""
+
+    cursor.execute(sql)
+
+    for record in cursor:
+        if record[0] not in all_users:
+            user_followers_count[record[0]] = int(record[1])
+
+    return user_followers_count
 
 
