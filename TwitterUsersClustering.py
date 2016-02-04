@@ -1,8 +1,9 @@
 from flask import Flask, request, render_template
 from api.API import get_api_instance
 from clustering.kmedoids import get_clusters, update_clusters_in_db
-from db.Insert_users import insert_users_from_time_to_db, set_auto_increment_keys_for_already_inserted_users
-from db.get_utilities import get_clusters_from_db
+from db.Insert_users import insert_users_from_time_to_db, set_auto_increment_keys_for_already_inserted_users, \
+    insert_more_users_to_db
+from db.get_utilities import get_clusters_from_db, get_all_users
 
 app = Flask(__name__)
 
@@ -25,6 +26,15 @@ def insert_users():
     first = int(request.form.get('first_page'))
     last = int(request.form.get('last_page'))
     insert_users_from_time_to_db(api, first, last)
+    return app.send_static_file('main.html')
+
+
+@app.route('/insert_more_users', methods=['POST'])
+def insert_more_users():
+    api = get_api_instance()
+    # first = int(request.form.get('first_page'))
+    # last = int(request.form.get('last_page'))
+    insert_more_users_to_db(api)
     return app.send_static_file('main.html')
 
 

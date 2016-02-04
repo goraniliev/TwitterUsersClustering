@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import tweepy
+from common.common import is_inserted
 
 __author__ = 'goran'
 
@@ -29,14 +30,52 @@ def get_api_instance(consumer_key='8wiTu4VA2HQ8IacbcOcxG5N6e',
 
 def get_followers(api, id_user):
     f = []
-    for foll_idx in tweepy.Cursor(api.followers_ids, id=id_user).items():
-        f.append((id_user, foll_idx))
+    try:
+        for foll_idx in tweepy.Cursor(api.followers_ids, id=id_user).items():
+            f.append((id_user, foll_idx))
+    except:
+        return set()
     return set(f)
 
 
 def get_friends(api, id_user):
     f = []
-    for friend_idx in tweepy.Cursor(api.friends_ids, id=id_user).items():
-        f.append((id_user, friend_idx))
-        print friend_idx
+    try:
+        for friend_idx in tweepy.Cursor(api.friends_ids, id=id_user).items():
+            f.append((id_user, friend_idx))
+            # print friend_idx
+    except:
+        return set()
     return set(f)
+
+
+def get_followers_ids(api, id_user):
+    f = []
+    try:
+        for foll_idx in tweepy.Cursor(api.followers_ids, id=id_user).items():
+            f.append(foll_idx)
+    except:
+        return set()
+    return set(f)
+
+
+def get_friends_ids(api, id_user):
+    f = []
+    try:
+        for friend_idx in tweepy.Cursor(api.friends_ids, id=id_user).items():
+            f.append(friend_idx)
+            # print friend_idx
+    except:
+        return set()
+    return set(f)
+
+
+def get_users_by_ids(api, id_users):
+    return [(u.id, u.screen_name, u.name.encode('utf-8'))
+            for u in api.lookup_users(id=id_users) if not is_inserted(u.id)]
+
+
+def get_user_by_id(api, id_user):
+    user = api.get_user(id=id_user)
+    return user.id, user.screen_name.encode('utf-8'), user.name.encode('utf-8')
+

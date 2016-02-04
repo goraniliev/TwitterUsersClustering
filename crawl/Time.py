@@ -2,6 +2,9 @@
 from bs4 import BeautifulSoup
 import urllib2
 from api.API import get_api_instance
+# from db.get_utilities import is_inserted
+# from db.Insert_users import is_inserted
+from common.common import is_inserted
 
 __author__ = 'goran'
 
@@ -36,4 +39,5 @@ def get_top_users(api, user_names):
     # for i in xrange(0, len(user_names), 15):
     #     users += api.lookup_users(user_names[i:min(i+15, len(user_names))])
     # return users
-    return [(u.id, u.screen_name, u.name.encode('utf-8')) for u in api.lookup_users(screen_names=user_names)]
+    return [(u.id, u.screen_name, u.name.encode('utf-8'))
+            for u in api.lookup_users(screen_names=user_names) if not is_inserted(u.id)]

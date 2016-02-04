@@ -1,24 +1,12 @@
 # -*- coding: utf-8 -*-
-import MySQLdb
 import time
-from api.API import get_followers, get_friends
+from api import API
+from api.API import get_followers, get_friends, get_users_by_ids, get_user_by_id
 from crawl.Time import get_top_user_names, get_top_users
+from db.connection import get_connection
+from db.get_utilities import get_all_friends, get_all_followers, get_all_users
 
 __author__ = 'goran'
-
-
-def get_connection():
-    '''
-    Returns connection to database (here is encapsulated the connection string).
-    :return:
-    '''
-    db = MySQLdb.connect(host="localhost",  # your host
-                         user="root",  # your username
-                         passwd="goranpass",  # your password
-                         db="twitter")
-    # cur = db.cursor()
-    # cur.close()
-    return db
 
 
 def insert_users_from_time_to_db(api, top_fol_start_page=1, top_fol_end_page=15):
@@ -82,6 +70,7 @@ def insert_users_from_time_to_db(api, top_fol_start_page=1, top_fol_end_page=15)
                 except:
                     print 'stuck followers'
                     time.sleep(15 * 60)
+
             cursor.executemany("""insert into follower(iduser, idfollower) values( %s,%s)""", followers)
             db.commit()
 
@@ -117,3 +106,82 @@ def set_auto_increment_keys_for_already_inserted_users(api, top_fol_start_page=1
 
     cursor.close()
     db.close()
+
+
+def is_macedonian_user(api, iduser, all_users, max_followers=70000, threshold_followers=0.01, threshold_friends=0.01):
+    user = api.get_user(id=iduser)
+
+    # We already have the users with most followers, so if there is someone with more followers, then he is not macedonian
+    if user.followers_count > max_followers or user.friends_count > max_followers:
+        return False, set(), set()
+
+    friends = API.get_friends_ids(api, iduser)
+    followers = API.get_followers_ids(api, iduser)
+
+    macedonian_friends = len(friends & all_users)
+    macedonian_followers = len(followers & all_users)
+
+    # print friends
+    # print followers
+    # print all_users
+    # print macedonian_friends, macedonian_followers
+    # print len(all_users), len(friends), len(followers)
+
+    # If greater part of friends and followers are macedonians, then this user is probably also macedonian
+    print user.screen_name
+    return 1.0 * macedonian_friends / (1 + len(friends)) > threshold_friends and \
+           1.0 * macedonian_followers / (1 + len(followers)) > threshold_followers, \
+           [(iduser, f) for f in friends], [(iduser, f) for f in followers]
+
+
+def insert_more_users_to_db(api):
+    db = get_connection()
+    cursor = db.cursor()
+
+    all_friends = get_all_friends()
+    all_followers = get_all_followers()
+    all_users = get_all_users()
+
+    # new_macedonian_users = set(all_friends)
+    cnt = 0
+    for friend in all_friends:
+        try:
+            is_macedonian, friends, followers = is_macedonian_user(api, friend, all_users)
+            print 'Friend', friend
+            if is_macedonian and friend not in all_users:
+                print 'YEEEEEEES'
+                # new_macedonian_users.add(friend)
+                all_users.add(friend)
+                new_user = get_user_by_id(api, friend)
+                print new_user
+                cursor.execute("""insert into user(iduser, screenname, name) values(%s,%s,%s)""", new_user)
+                cursor.executemany("""insert into friend(iduser, idfriend) values(%s,%s)""", friends)
+                db.commit()
+        except:
+            continue
+        cnt += 1
+        print 'Count', cnt
+
+    cnt = 0
+
+    for follower in all_followers:
+        try:
+            is_macedonian, friends, followers = is_macedonian_user(api, follower, all_users)
+            print 'Follower', follower
+            if follower not in all_users and is_macedonian:
+                print 'YEEEEEEES'
+                # new_macedonian_users.add(follower)
+                new_user = get_user_by_id(api, friend)
+                all_users.add(follower)
+                cursor.execute("""insert into user(iduser, screenname, name) values(%s,%s,%s)""", new_user)
+                cursor.executemany("""insert into follower(iduser, idfollower) values( %s,%s)""", followers)
+                db.commit()
+        except:
+            continue
+        cnt += 1
+        print 'Count', cnt
+    cursor.close()
+    db.close()
+
+
+# def insert_more_users_without_unnecessary_api_calls(api, min_friends=3, min_followers=3):

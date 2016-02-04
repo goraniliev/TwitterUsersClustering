@@ -25,6 +25,13 @@
     <input class="main_button" type="submit" value="Insert users from chosen range of Time.mk top users' pages.">
 </form>
 
+<form action="/insert_more_users" method="POST">
+    <p class="form_paragraph">
+        Extend user database, by inserting friends and followers of the previously inserted users.
+    </p>
+    <input class="main_button" type="submit" value="Extend users database.">
+</form>
+
 <form action="/update_clusters" method="POST">
     <p class="form_paragraph">
         You should call this method after updating the database. When you update the database the users aren't clustered.

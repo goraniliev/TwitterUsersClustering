@@ -1,20 +1,13 @@
 # -*- coding: utf-8 -*-
 from math import sqrt
 import random
-from db.Insert_users import get_connection
+from db.connection import get_connection
 from db.get_utilities import get_friends, get_followers
+from metrics.similarity_measures import jaccard_sim, paper_sim
 
 import matplotlib.pyplot as plt
 
 __author__ = 'goran'
-
-
-def jaccard_sim(set1, set2):
-    return 1.0 * len(set1 & set2) / len(set1 | set2)
-
-
-def paper_sim(set1, set2):
-    return 1.0 * len(set1 & set2) / (sqrt(len(set1)) * sqrt(len(set2)))
 
 
 def random_medoids(user_ids, k=2):

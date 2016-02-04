@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from collections import OrderedDict
-from db.Insert_users import get_connection
+from db.connection import get_connection
 
 __author__ = 'goran'
 
@@ -65,3 +65,40 @@ def get_clusters_from_db():
         idx += 1
 
     return ordered_clusters
+
+
+def get_all_users():
+    db = get_connection()
+    cursor = db.cursor()
+    sql = """select iduser from user"""
+    cursor.execute(sql)
+
+    users = [u[0] for u in cursor]
+
+    return set(users)
+
+
+def get_all_friends():
+    db = get_connection()
+    cursor = db.cursor()
+    sql = """select distinct idfriend from friend"""
+    cursor.execute(sql)
+
+    users = [u[0] for u in cursor]
+
+    return set(users)
+
+
+def get_all_followers():
+    db = get_connection()
+    cursor = db.cursor()
+    sql = """select distinct idfollower from follower"""
+    cursor.execute(sql)
+
+    users = [u[0] for u in cursor]
+
+    return set(users)
+
+
+
+
