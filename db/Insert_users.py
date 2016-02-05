@@ -13,17 +13,6 @@ def insert_users_from_time_to_db(api, top_fol_start_page=1, top_fol_end_page=15)
     db = get_connection()
     cursor = db.cursor()
 
-    # del_sql = """DELETE FROM friend where iduser > 0;"""
-    # cursor.execute(del_sql)
-    # db.commit()
-    #
-    # del_sql = """DELETE FROM follower where iduser > 0;"""
-    # cursor.execute(del_sql)
-    # db.commit()
-    #
-    # del_sql = """DELETE FROM user where iduser > 0;"""
-    # cursor.execute(del_sql)
-    # db.commit()
     users_done = 0
     for i in xrange(top_fol_start_page, top_fol_end_page + 1):
         start = time.time()
@@ -121,12 +110,6 @@ def is_macedonian_user(api, iduser, all_users, max_followers=70000, threshold_fo
     macedonian_friends = len(friends & all_users)
     macedonian_followers = len(followers & all_users)
 
-    # print friends
-    # print followers
-    # print all_users
-    # print macedonian_friends, macedonian_followers
-    # print len(all_users), len(friends), len(followers)
-
     # If greater part of friends and followers are macedonians, then this user is probably also macedonian
     print user.screen_name
     return 1.0 * macedonian_friends / (1 + len(friends)) > threshold_friends and \
@@ -204,10 +187,10 @@ def insert_more_users_without_unnecessary_api_calls(api, min_friends=2, min_foll
     cursor = db.cursor()
 
     for u in users:
-        user = get_user_by_id(api, u)
+        user, friends_count, followers_count = get_user_by_id(api, u)
 
         # if he is macedonian, he would already be on Twitter
-        if user.followers_count > max_followers or user.friends_count > max_friends: continue
+        if followers_count > max_followers or friends_count > max_friends: continue
 
         cursor.execute("""insert into user(iduser, screenname, name) values(%s,%s,%s)""", user)
 
@@ -216,7 +199,7 @@ def insert_more_users_without_unnecessary_api_calls(api, min_friends=2, min_foll
             followers = get_followers(api, u)
         except:
             print 'waiting for API'
-            time.sleep(15 * 60)
+            time.sleep(61)
 
         cursor.executemany("""insert into friend(iduser, idfriend) values(%s,%s)""", friends)
 

@@ -78,5 +78,5 @@ def get_users_by_ids(api, id_users):
 
 def get_user_by_id(api, id_user):
     user = api.get_user(id=id_user)
-    return user.id, user.screen_name.encode('utf-8'), user.name.encode('utf-8')
+    return (user.id, user.screen_name.encode('utf-8'), user.name.encode('utf-8')), user.friends_count, user.followers_count
 

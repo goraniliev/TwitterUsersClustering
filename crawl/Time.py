@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 from bs4 import BeautifulSoup
 import urllib2
-from api.API import get_api_instance
-# from db.get_utilities import is_inserted
-# from db.Insert_users import is_inserted
 from common.common import is_inserted
 
 __author__ = 'goran'
