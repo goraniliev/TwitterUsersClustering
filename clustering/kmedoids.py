@@ -45,7 +45,8 @@ def init_clusters(friends, followers, k, sim=jaccard_sim):
 
 
 def within_sim(friends, followers, medoid, users, sim=jaccard_sim):
-    return sum([(sim(friends[medoid], friends[user]) + sim(followers[medoid], followers[user])) / 2.0 for user in users])
+    return sum([(sim(friends.get(medoid, set()), friends.get(user, set())) +
+                 sim(followers.get(medoid, set()), followers.get(user, set()))) / 2.0 for user in users])
 
 
 def replace_empty_cluster(used_medians, all_users):
@@ -77,7 +78,8 @@ def kmedoids(friends, followers, k=2, max_iter=100, sim=jaccard_sim):
             best_clust = -1
             best_sim = -1
             for cluster in cluster_users:
-                similarity = (sim(friends[cluster], friends[user]) + sim(followers[cluster], followers[user])) / 2.0
+                similarity = (sim(friends.get(cluster, set()), friends.get(user, set())) +
+                              sim(followers.get(cluster, set()), followers.get(user, set()))) / 2.0
                 # print cluster, user, sim(data[cluster], data[user])
                 if similarity > best_sim:
                     best_sim = similarity
@@ -115,11 +117,6 @@ def kmedoids(friends, followers, k=2, max_iter=100, sim=jaccard_sim):
                     change = True
             new_cluster_users[best_median] = {}
 
-        # old_keys = set(cluster_users.keys())
-        # new_keys = set(new_cluster_users.keys())
-        # print 'old', old_keys
-        # print 'new', new_keys
-        # print old_keys == new_keys
         if set(new_cluster_users.keys()) == set(cluster_users.keys()) or (not change and not medoids_to_try):
             return cluster_users
 
@@ -130,20 +127,7 @@ def get_clusters(k=3):
     friends = get_friends()
     followers = get_followers()
 
-    # red_f = {}
-    # count = 200
-    # for f in friends:
-    #     red_f[f] = friends[f]
-    #     count -= 1
-    #     if count == 0:
-    #         break
-
     return kmedoids(friends, followers, k)
-
-# friends = get_friends()
-# with open('friends.txt', 'w') as fout:
-#     for f in friends:
-#         fout.write(str(f) + '\t' + str(len(friends[f])) + '\n')
 
 
 def update_clusters_in_db(k=3):

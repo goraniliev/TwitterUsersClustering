@@ -1,9 +1,9 @@
 from flask import Flask, request, render_template
 from api.API import get_api_instance
-from clustering.kmedoids import get_clusters, update_clusters_in_db
+from clustering.kmedoids import update_clusters_in_db
 from db.Insert_users import insert_users_from_time_to_db, set_auto_increment_keys_for_already_inserted_users, \
     insert_more_users_to_db, insert_more_users_without_unnecessary_api_calls
-from db.get_utilities import get_clusters_from_db, get_all_users
+from db.get_utilities import get_clusters_from_db
 
 app = Flask(__name__)
 
@@ -57,7 +57,7 @@ def set_keys():
 
 @app.route('/update_clusters', methods=['POST'])
 def update_clusters():
-    k = int(request.form.get('k_value'))
+    k = int(request.form.get('k_value')) - 1
     update_clusters_in_db(k)
     return app.send_static_file('main.html')
 

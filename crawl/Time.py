@@ -32,9 +32,5 @@ def get_top_users_from_p_pages(p=100):
 
 
 def get_top_users(api, user_names):
-    # users = []
-    # for i in xrange(0, len(user_names), 15):
-    #     users += api.lookup_users(user_names[i:min(i+15, len(user_names))])
-    # return users
     return [(u.id, u.screen_name, u.name.encode('utf-8'))
             for u in api.lookup_users(screen_names=user_names) if not is_inserted(u.id)]

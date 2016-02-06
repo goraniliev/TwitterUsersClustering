@@ -167,47 +167,53 @@ def insert_more_users_to_db(api):
     db.close()
 
 
-def find_new_users_to_insert(api, min_friends=1, min_followers=5):
+def find_new_users_to_insert(min_friends=1, min_followers=5):
     inv_user_friends = get_inv_friends()
     inv_user_followers = get_inv_followers()
 
     users = []
 
     for u, cnt in inv_user_friends.iteritems():
-        if cnt > min_friends and inv_user_followers.get(u, 0) > min_followers:
-            users.append(u)
+        cnt_fol = inv_user_followers.get(u, 0)
+        if cnt > min_friends and cnt_fol > min_followers:
+            users.append((cnt_fol + cnt, u))
 
-    return users
+    users.sort()
+
+    return [u[1] for u in users]
 
 
 def insert_more_users_without_unnecessary_api_calls(api, min_friends=2, min_followers=10, max_friends=50000, max_followers=50000):
-    users = find_new_users_to_insert(api, min_friends, min_followers)
+    users = find_new_users_to_insert(min_friends, min_followers)
 
     db = get_connection()
     cursor = db.cursor()
 
     for u in users:
-        user, friends_count, followers_count = get_user_by_id(api, u)
-
-        # if he is macedonian, he would already be on Twitter
-        if followers_count > max_followers or friends_count > max_friends: continue
-
-        cursor.execute("""insert into user(iduser, screenname, name) values(%s,%s,%s)""", user)
-
         try:
-            friends = get_friends(api, u)
-            followers = get_followers(api, u)
+            user, friends_count, followers_count = get_user_by_id(api, u)
+
+            # if he is macedonian, he would already be on Twitter
+            if followers_count > max_followers or friends_count > max_friends: continue
+
+            cursor.execute("""insert into user(iduser, screenname, name) values(%s,%s,%s)""", user)
+
+            try:
+                friends = get_friends(api, u)
+                followers = get_followers(api, u)
+            except:
+                print 'waiting for API'
+                time.sleep(61)
+
+            cursor.executemany("""insert into friend(iduser, idfriend) values(%s,%s)""", friends)
+
+            cursor.executemany("""insert into follower(iduser, idfollower) values( %s,%s)""", followers)
+
+            db.commit()
+
+            print user[1].decode('utf-8'), " inserted"
         except:
-            print 'waiting for API'
-            time.sleep(61)
-
-        cursor.executemany("""insert into friend(iduser, idfriend) values(%s,%s)""", friends)
-
-        cursor.executemany("""insert into follower(iduser, idfollower) values( %s,%s)""", followers)
-
-        db.commit()
-
-        print user[1].decode('utf-8'), " inserted"
+            continue
 
 
 

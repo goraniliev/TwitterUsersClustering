@@ -2,7 +2,7 @@
     {% for key, users in clusters.iteritems() %}
         <h>{{ key }}</h>
         {% for user in users %}
-            <dd>{{ user }}</dd>
+            <dd><a href="https://twitter.com/{{ user }}">{{ user }}</a></dd>
         {% endfor %}
     {% endfor %}
 </dl>

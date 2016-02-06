@@ -5,7 +5,7 @@ __author__ = 'goran'
 
 
 def jaccard_sim(set1, set2):
-    return 1.0 * len(set1 & set2) / len(set1 | set2)
+    return 1.0 * len(set1 & set2) / (1.0 + len(set1 | set2))
 
 
 def paper_sim(set1, set2):
